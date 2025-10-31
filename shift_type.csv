@@ -1,0 +1,9 @@
+shift_type,begin,end
+Shift 1,9:00 AM,5:00 PM
+Shift 2,4:00 PM,12:00 PM
+Shift 3,7:00 PM,3:00 AM
+Shift 4,6:00 AM,2:00 PM
+WEnd-1,6:00 AM,3:30 PM
+WEnd-2,3:00 PM,12:30 AM
+Shift 1A,9:00 AM,6:00 PM
+OFF,OFF,OFF
