@@ -44,8 +44,9 @@ def get_schedule():
     current_month = today.month
     current_year = today.year
 
-    next_month = (today.replace(day=28) + timedelta(days=4)).month
-    next_year = (today.replace(day=28) + timedelta(days=4)).year
+    next_day = today + timedelta(days=1)
+    next_month = next_day.month
+    next_year = next_day.year
 
     allowed_months = [current_month, next_month]
     allowed_years = [current_year, next_year]
@@ -61,8 +62,7 @@ def get_schedule():
                     date_columns.append((i, j, cell_date))
             except:
                 continue
-        if date_columns:
-            break
+
 
     for date_row_index, target_col_index, target_date in date_columns:
         current_name = None
