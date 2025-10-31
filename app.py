@@ -21,9 +21,9 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
-sheet_id = os.getenv("SHEET_ID", "1-oRIDg05sPRTlRV6iBWk8OhS-9fcnOe8hDycjBhzdVI")
-sheet_name = os.getenv("SHEET_NAME", "New Shift 24/7 ")
-sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
+sheet_id = os.getenv("SHEET_ID")
+#sheet_name = os.getenv("SHEET_NAME", "New Shift 24/7 ")
+sheet = client.open_by_key(sheet_id).worksheet("New Shift 24/7 ")
 
 # 📘 Load shift type mapping
 df_shift = pd.read_csv("shift_type.csv")
