@@ -44,6 +44,12 @@ def get_schedule():
     current_month = today.month
     current_year = today.year
 
+    next_month = (today.replace(day=28) + timedelta(days=4)).month
+    next_year = (today.replace(day=28) + timedelta(days=4)).year
+
+    allowed_months = [current_month, next_month]
+    allowed_years = [current_year, next_year]
+
     all_data = []
     date_columns = []
 
@@ -51,7 +57,7 @@ def get_schedule():
         for j, cell in enumerate(row):
             try:
                 cell_date = datetime.strptime(cell.strip(), '%m/%d/%Y')
-                if cell_date.month == current_month and cell_date.year == current_year:
+                if cell_date.month in allowed_months and cell_date.year in allowed_years:
                     date_columns.append((i, j, cell_date))
             except:
                 continue
