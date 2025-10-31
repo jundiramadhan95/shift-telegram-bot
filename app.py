@@ -128,8 +128,8 @@ def format_shift_message(df, label):
 def format_active_message(df):
     active_df = df[df.apply(is_active_now, axis=1)]
     if active_df.empty:
-        return "🔍 Tidak ada yang sedang aktif saat ini."
-    lines = ["🟢 Yang sedang aktif sekarang:"]
+        return "Tidak ada yang sedang aktif saat ini."
+    lines = ["Yang sedang aktif sekarang:"]
     for _, row in active_df.iterrows():
         lines.append(f"• {row['USER_DESCRIPTION']} ({row['SHIFT']}) — {row['START_TIME']} s/d {row['END_TIME']}")
     return "\n".join(lines)
@@ -138,32 +138,68 @@ def format_active_message(df):
 def home():
     return "✅ Shift Bot Flask aktif."
 
+# Mapping nama singkat ke nama lengkap
+name_aliases = {
+    "rachma": "Rachma Dwi",
+    "arief": "Arief Rahman",
+    "maya": "Kris Damayanti",
+    "frans": "Frans Pandapotan",
+    "irwan": "Irwan Cahyanto",
+    "erwan": "Erwan Abdullah",
+    "jundi": "Ahmad Jundi"
+}
+
+
 @app.route("/webhook", methods=["POST"])
 def telegram_webhook():
-    data = request.get_json()
+    data = request.get_json(force=True)
     message = data.get("message", {})
-    text = message.get("text", "").strip().lower()
+    text = message.get("text", "").strip()
     chat_id = message.get("chat", {}).get("id")
 
     df_schedule = get_schedule()
     today_str = datetime.now(tz).strftime("%d-%m-%Y")
     tomorrow_str = (datetime.now(tz) + timedelta(days=1)).strftime("%d-%m-%Y")
 
-    if text == "/shift_today":
+    lowered = text.lower()
+
+    if lowered == "/shift_today":
         df_today = df_schedule[df_schedule["SHIFT_DATE"] == today_str]
         msg = format_shift_message(df_today, today_str)
         send_telegram_message(msg, chat_id)
 
-    elif text == "/shift_tomorrow":
+    elif lowered.startswith("/shift_today "):
+        alias = lowered[len("/shift_today "):].strip()
+        full_name = name_aliases.get(alias)
+
+        df_today = df_schedule[df_schedule["SHIFT_DATE"] == today_str]
+
+        if full_name:
+            df_filtered = df_today[df_today["USER_DESCRIPTION"].str.lower() == full_name.lower()]
+            msg = format_shift_message(df_filtered, f"{today_str} untuk {full_name}")
+        else:
+            msg = f"Nama '{alias}' tidak dikenali. Gunakan nama panggilan yang valid."
+
+        send_telegram_message(msg, chat_id)
+
+
+    elif lowered == "/shift_tomorrow":
         df_tomorrow = df_schedule[df_schedule["SHIFT_DATE"] == tomorrow_str]
         msg = format_shift_message(df_tomorrow, tomorrow_str)
         send_telegram_message(msg, chat_id)
 
-    # elif text == "/active_now":
-    #     msg = format_active_message(df_schedule)
-    #     send_telegram_message(msg, chat_id)
+    elif lowered == "/active_now":
+        msg = format_active_message(df_schedule)
+        send_telegram_message(msg, chat_id)
+    
+    elif lowered == "/alias_list":
+        lines = ["📘 Alias yang tersedia:"]
+        for alias, full_name in name_aliases.items():
+            lines.append(f"• {alias} → {full_name}")
+        send_telegram_message("\n".join(lines), chat_id)
 
     return jsonify({"status": "ok"})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
